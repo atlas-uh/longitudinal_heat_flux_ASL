@@ -1,0 +1,160 @@
+blue  = [0.00 0.30 0.55];
+orange = [0.70 0.25 0.05];
+
+RuT_SLTEST = sonic_SLTEST.CuT./sqrt(sonic_SLTEST.Cuu)./sqrt(sonic_SLTEST.CTT);
+Ruw_SLTEST = sonic_SLTEST.Cuw./sqrt(sonic_SLTEST.Cuu)./sqrt(sonic_SLTEST.Cww); 
+RwT_SLTEST = sonic_SLTEST.CwT./sqrt(sonic_SLTEST.Cww)./sqrt(sonic_SLTEST.CTT);
+RuT_constraint_SLTEST = (abs(Ruw_SLTEST.*RwT_SLTEST)+sqrt(1+Ruw_SLTEST.^2.*RwT_SLTEST.^2-(Ruw_SLTEST.^2+RwT_SLTEST.^2)));
+
+RuT_grass =  sonic_grass.CuT./sqrt(sonic_grass.Cuu)./sqrt(sonic_grass.CTT);
+Ruw_grass = sonic_grass.Cuw./sqrt(sonic_grass.Cuu)./sqrt(sonic_grass.Cww); 
+RwT_grass = sonic_grass.CwT./sqrt(sonic_grass.Cww)./sqrt(sonic_grass.CTT);
+RuT_constraint_grass = (abs(Ruw_grass.*RwT_grass)+sqrt(1+Ruw_grass.^2.*RwT_grass.^2-(Ruw_grass.^2+RwT_grass.^2)));
+
+
+label_fontsize = 20;
+gca_fontsize = 16;
+legend_fontsize = 16;
+
+alpha1 = 0.2;              % SLTEST transparency (smaller = lighter)
+alpha2 = 0.30;              % Grass transparency
+scatter_size = 20;
+
+
+% Formatting
+xlabel('$-\zeta$','Interpreter','latex')
+ylabel('$R_h$','Interpreter','latex')
+%legend([s1 s2], {'SLTEST','Grass Clearing'}, 'Location','best', 'Box','on')
+
+
+xlimits = [-1 7];
+ylimits = [-1 1];
+xlim(xlimits); ylim(ylimits); box on
+
+
+
+fig = figure (4); clf; 
+set(gcf,'units','normalized','OuterPosition',[0,0,0.6,0.4]);
+
+subplot(1,2,1)
+
+xlimits = [-1 7];
+ylimits = [-0.5 2];
+hold on
+xline(0,'k-','HandleVisibility','off');
+yline(0,'k-','HandleVisibility','off');
+
+
+x1 = -sonic_SLTEST.zeta(:);
+y1 = RuT_SLTEST(:); 
+x2 = -sonic_grass.zeta(:);
+y2 = RuT_grass(:);
+
+% --- Scatter
+% --- SLTEST (blue)
+s1 = scatter(x1, y1, scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none');
+s1.MarkerFaceAlpha = alpha1;     % key line
+s1.Marker = 'o';    % circles
+% 
+% scatter(x2, y2, scatter_size, colors2, 'o', 'filled', 'MarkerEdgeColor','none');
+
+
+% --- Grass (orange)
+s2 = scatter(x2, y2, scatter_size, 'filled','MarkerFaceColor', orange, 'MarkerEdgeColor', 'none');
+s2.MarkerFaceAlpha = alpha2;
+s2.Marker = 's';
+
+
+% -- formatting 
+set(gca,'fontsize',gca_fontsize)
+xlabel('$-\zeta$','Interpreter','latex','fontsize',label_fontsize)
+ylabel('$R_{u\theta}=\overline{ u''\theta_v'' }/\left(\sigma_u \sigma_\theta\right)$','Interpreter','latex','fontsize',label_fontsize)
+legend('SLTEST','Grass Clearing','location','southeast','box','on','fontsize',legend_fontsize,'interpreter','latex')
+text(0.004,0.99,'(a)','units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize+4,'HorizontalAlignment','left','VerticalAlignment','top');
+
+
+xlim([-1 7])
+ylim([-1 1])
+box on
+
+% --- inset 
+axes('Position',[.205 .65 .24 .25]) % .65 .65 .24 .25
+
+s1 = scatter(x1, y1, scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor', 'none');
+s1.MarkerFaceAlpha = alpha1;     % key line
+s1.Marker = 'o';    % circles 
+hold on;
+% 
+% scatter(x2, y2, scatter_size, colors2, 'o', 'filled', 'MarkerEdgeColor','none');
+
+
+% --- Grass (orange)
+s2 = scatter(x2, y2, scatter_size, 'filled','MarkerFaceColor', orange, 'MarkerEdgeColor', 'none');
+s2.MarkerFaceAlpha = alpha2;
+s2.Marker = 's';
+
+xlim([-0.1 0.1]);
+ylim([-1.1 1.1])
+xline([0 0],'k-');
+yline([0 0],'k-');
+yline(0.64,'k--')
+yline(-0.99,'k--')
+box on
+set(gca,'fontsize',gca_fontsize)
+
+
+
+subplot(1,2,2)
+
+
+y1 = abs(RuT_SLTEST)./RuT_constraint_SLTEST; 
+y2 =abs(RuT_grass)./RuT_constraint_grass;
+
+% --- SLTEST (blue)
+s1 = scatter(x1, y1, scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor', 'none');
+s1.MarkerFaceAlpha = alpha1;     % key line
+s1.Marker = 'o';    % circles
+hold on;
+% scatter(x2, y2, scatter_size, colors2, 'o', 'filled', 'MarkerEdgeColor','none');
+
+% --- Grass (orange)
+s2 = scatter(x2, y2, scatter_size, 'filled','MarkerFaceColor', orange, 'MarkerEdgeColor', 'none');
+s2.MarkerFaceAlpha = alpha2;
+s2.Marker = 's';
+
+
+%plot([1.1 0],[1.1 0],'k-','LineWidth',2);
+set(gca,'fontsize',gca_fontsize)
+
+ylabel('$\frac{|R_{u\theta}|}{|R_{uw}R_{w\theta}|+\sqrt{1+R_{uw}^2R_{w\theta}^2-(R_{uw}^2+R_{w\theta}^2)}}$','Interpreter','latex','fontsize',label_fontsize+4,'rotation',90)
+xlabel('$-\zeta$','Interpreter','latex','fontsize',label_fontsize)
+%legend('$\xi<-0.05$ (unstable)','$|\xi|<0.05$ (neutral)','$\xi>0.05$ (stable)','location','southeast','fontsize',legend_fontsize,'interpreter','latex')
+xlim([-1 7])
+xline(0,'k-');
+ylim([0 1])
+text(0.004,0.99,'(b)','units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize+4,'HorizontalAlignment','left','VerticalAlignment','top');
+box on
+
+
+% --- inset
+axes('Position',[.65 .65 .24 .25]) % .65 .65 .24 .25
+% --- SLTEST (blue)
+s1 = scatter(x1, y1, scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor', 'none');
+s1.MarkerFaceAlpha = alpha1;     % key line
+s1.Marker = 'o';    % circles
+hold on;
+% scatter(x2, y2, scatter_size, colors2, 'o', 'filled', 'MarkerEdgeColor','none');
+
+% --- Grass (orange)
+s2 = scatter(x2, y2, scatter_size, 'filled','MarkerFaceColor', orange, 'MarkerEdgeColor', 'none');
+s2.MarkerFaceAlpha = alpha2;
+s2.Marker = 's';
+xlim([-0.5 0.5]);
+ylim([0 1])
+xline(0,'k-');
+box on
+set(gca,'fontsize',gca_fontsize)
+
+
+exportgraphics(fig, [figures_folder '\Fig_RuT_plus.pdf'], 'ContentType', 'vector','BackgroundColor','none');
+

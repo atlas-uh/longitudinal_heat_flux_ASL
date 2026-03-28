@@ -1,0 +1,168 @@
+function [Up,Tp] = process_data_2(Uall,Tall,pow,fs,utaus,z_vec)
+
+alpha = 2.1e-5; % thermal diffusivity of air m^2/s
+nu = 1.5e-5; 
+Up.fluc = []; Up.var = []; Up.mean = []; Up.D2 = []; Up.D3 = []; Up.r = [];
+Tp.fluc = []; Tp.var = []; Tp.mean = [];
+nmin = 5;
+for B = 1:size(Uall,3)
+    disp(['ens#' num2str(B) '/' num2str(size(Uall,3))]);
+    U_event = Uall(:,:,B);
+    T_event = Tall(:,:,B);
+    
+    % for U 
+    S_process_U = find(U_event(1,:));
+    for S = S_process_U
+        % --- basic stats 
+        [U_event_de,U_event_ls] = detrendHutchins(U_event(:,S),fs,nmin);
+        Up.U_detrended (:,S,B) = U_event_de; 
+        Up.fluc(:,S,B) = U_event_de-mean(U_event_de);
+        Up.mean(:,S,B) = mean(U_event(:,S)); 
+        Up.var(:,S,B) = var(Up.fluc(:,S,B));
+        % --- integral time and length scales
+        ac = autocorr(Up.fluc(:,S,B),length(hamming(2^pow))*3-1);
+        t = 0:(1/fs):(length(ac)-1)*(1/fs);
+        ind = find(ac < 0,1);
+        [M, ~] = max(cumtrapz(t(1:ind),ac(1:ind))); % [s]
+        Up.integral_time_scale_auto(1,S,B) = M;
+        Up.integral_length_scale_auto(1,S,B) = M*mean(Up.mean(:,S,B));
+    end
+    % --- spectra
+    for S = S_process_U
+        [Up.Pf(:,S,B),Up.f(:,S,B)]=pwelch(Up.fluc(:,S,B),hamming(2^pow),0,[],fs,'onesided','psd'); 
+        Up.Pk(:,S,B) = Up.Pf(:,S,B)./(2*pi).*mean(Up.mean(:,S,B));
+        Up.k(:,S,B) = (2*pi)./(Up.mean(:,S,B)).*Up.f(:,S,B);
+
+        % subtract noise floor
+        nf_frac = 0.01;
+        noise_floor = median(Up.Pk(round(end*(1-nf_frac)):end,S,B));
+        noise_floor = 0; 
+        
+        Up.Pk(:,S,B) = max(Up.Pk(:,S,B) - noise_floor, 0);
+        Up.noise_floor(1,S,B) = noise_floor;
+
+        Up.eps.iso(1,S,B) = trapz(Up.k(:,S,B),15*nu.*Up.Pk(:,S,B).*Up.k(:,S,B).^2); % from Pope p. 219 [m^2/s^3]
+    end
+    % --- structure functions
+    for S = S_process_U
+        ETAs = (1/fs:1/fs:500).*mean(Up.mean(:,S,B)); 
+        etas = unique(floor(logspace(0,log10(length(ETAs)),500)));
+        UU = Up.U_detrended (:,S,B);
+        ind =1;
+        for ii = etas       
+            [Up.D2(ind,S,B),Up.D3(ind,S,B)] = structureFunctions23(UU,ii);
+            ind = ind+1;
+        end
+        Up.r(:,S,B) =  ETAs(etas); 
+        Up.eps.D3_45(1,S,B) = max(Up.D3(:,S,B)/(4/5)./Up.r(:,S,B));
+        Up.eps.D2(1,S,B) = max(((Up.D2(:,S,B) ./ 2.12).^(3/2)) ./ Up.r(:,S,B));
+        lambda_D2 = sqrt(15*nu*Up.var(1,S,B)./Up.eps.D2(1,S,B)); 
+        Up.Re_lambda.D2(1,S,B) = lambda_D2.*sqrt(Up.var(1,S,B))/nu;
+        Up.lambda.D2(1,S,B) = lambda_D2;
+        Up.lambda.iso(1,S,B) = sqrt(15*nu*Up.var(1,S,B)./Up.eps.iso(:,S,B)); 
+        Re = Up.Re_lambda.D2(1,S,B);
+        C3 = @(Re) (-4/5+8.45*(Re).^(-2/3));
+        for i = 1:20
+            C3(Re);
+            eps_temp = max(Up.D3(:,S,B)./C3(Re)./Up.r(:,S,B));
+            lambda_temp = sqrt(15*nu*Up.var(:,S,B)/eps_temp);
+            Re = lambda_temp.*sqrt(Up.var(:,S,B))/nu;
+        end
+        Up.lambda.D3(1,S,B) = lambda_temp;
+        Up.Re_lambda.D3(:,S,B)= Re;
+        Up.eps.D3(:,S,B) = eps_temp;
+        lambda_D3_45 = sqrt(15*nu*Up.var(:,S,B)/Up.eps.D3_45(:,S,B));
+        Up.Re_lambda.D3_45(:,S,B) = lambda_D3_45.*sqrt(Up.var(1,S,B))/nu;
+        Up.eps.sonic(:,S,B) = (utaus(B)).^3./(0.41*z_vec(S));
+        Up.lambda.sonic(:,S,B) = sqrt(15*nu*Up.var(:,S,B)/Up.eps.sonic(:,S,B));
+        Up.Re_lambda.sonic(:,S,B) = Up.lambda.sonic(:,S,B).*sqrt(Up.var(1,S,B))/nu;       
+    end
+
+
+    % for T
+    S_process_T = find(T_event(1,:));
+    for S = S_process_T
+        % --- basic stats
+        [T_event_de,T_event_ls] = detrendHutchins(T_event(:,S),fs,nmin);
+        Tp.fluc(:,S,B) = T_event_de-mean(T_event_de);
+        Tp.mean(:,S,B) = mean(T_event(:,S)); 
+        Tp.var(:,S,B) = var(Tp.fluc(:,S,B));
+        % --- integral time and length scales 
+        ac = autocorr(Tp.fluc(:,S,B),length(hamming(2^pow))*2-1);
+        t = 0:(1/fs):(length(ac)-1)*(1/fs);
+        ind = find(ac < 0,1);
+        [M, ~] = max(cumtrapz(t(1:ind),ac(1:ind))); % [s]
+        Tp.integral_time_scale_auto(1,S,B) = M;
+        Tp.integral_length_scale_auto(1,S,B) = M*mean(Up.mean(:,S,B));
+    end
+    % --- spectra
+    for S = S_process_T
+        [Tp.Pf(:,S,B),Tp.f(:,S,B)]=pwelch(Tp.fluc(:,S,B),hamming(2^pow),0,[],fs,'onesided','psd'); 
+        Tp.Pk(:,S,B) = Tp.Pf(:,S,B)./(2*pi).*mean(Up.mean(:,S,B));
+        Tp.k(:,S,B) = (2*pi)./mean(Up.mean(:,S,B)).*Tp.f(:,S,B);
+
+        % subtract noise floor
+        noise_floor = median(Tp.Pk(round(end*(1-nf_frac)):end,S,B));
+        noise_floor = 0; 
+        Tp.Pk(:,S,B) = max(Tp.Pk(:,S,B) - noise_floor, 0);
+        Tp.noise_floor(1,S,B) = noise_floor;
+
+        Tp.eps.iso(1,S,B) = trapz(Tp.k(:,S,B),6*alpha.*Tp.Pk(:,S,B).*Tp.k(:,S,B).^2); 
+    end
+    % --- structure functions
+    for S = S_process_T
+        ETAs = (1/fs:1/fs:500).*mean(Up.mean(:,S,B)); 
+        etas = unique(floor(logspace(0,log10(length(ETAs)),500)));
+        UU = Uall(:,S,B);
+        TT = Tall(:,S,B);
+        ind =1;
+        for ii = etas
+            [Tp.D2(ind,S,B),Tp.D3(ind,S,B),Tp.DTTu(ind,S,B)] = structureFunctions23T(UU,TT,ii);
+            ind = ind+1;
+        end
+        Tp.r(:,S,B) =  ETAs(etas);
+        Tp.eps.DTTu(1,S,B) = max((-3/4)*Tp.DTTu(:,S,B)./Tp.r(:,S,B));
+        Tp.eps.D2_no_eps(1,S,B) = max(-0.3125*Tp.D2(:,S,B)./(Tp.r(:,S,B).^(2/3)));  
+    end
+end
+
+
+function [U_filled,U_binned] = binned_mean(Uraw,bin_length)
+    erm = mod(length(Uraw),bin_length);
+    Utemp1 = Uraw(1:end-erm); 
+    Utemp2 = reshape(Utemp1,bin_length,[]);
+    U_binned = mean(Utemp2);
+    Utemp4 = repmat(U_binned,bin_length,1);
+    Utemp5 = reshape(Utemp4,[],1);
+    %Utemp6 = repmat(mean(Uraw(end-erm:end)),erm,1);
+    U_filled = Utemp5;
+end 
+
+function [DTT,DTTT,DTTu] = structureFunctions23T(u_all,t_all,i)
+    t_m = -(t_all(i+1:end,:)-t_all(1:end-i,:));
+    u_m = -(u_all(i+1:end,:)-u_all(1:end-i,:));
+
+    t_m2 = (t_m).^2;
+    DTT = mean(mean(t_m2));
+    
+    t_m3 = (t_m2).*t_m; %%% TTT
+    DTTT = mean(mean(t_m3));
+    
+    u_ttu = (t_m2).*u_m; %%% TTT
+    DTTu = mean(mean(u_ttu));
+     
+end
+     
+   
+
+function [M2,M3] = structureFunctions23(u_all,i)
+    u_m = -(u_all(i+1:end,:)-u_all(1:end-i,:));
+    
+    u_m2 = (u_m).^2;
+    M2 = mean(mean(u_m2));
+    
+    u_m3 = (u_m2).*u_m;
+    M3 = mean(mean(u_m3));
+end
+
+end
