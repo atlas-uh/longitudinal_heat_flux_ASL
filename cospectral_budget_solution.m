@@ -60,6 +60,12 @@ for I = 1:3
         ind_Prod = (k_son_smooth > k_son_smooth(imax)) & (k_son_smooth < 20) & isfinite(Prod_k_son_smooth);
         fit_Prod = fit_Production(k_son_smooth(ind_Prod), Prod_k_son_smooth(ind_Prod));
 
+
+        % save for diagnostics
+saved_fit_Prod(r,I).gamma = fit_Prod.gamma;
+saved_fit_Prod(r,I).B     = fit_Prod.B;
+saved_fit_Prod(r,I).A     = fit_Prod.A;
+
         % ==========================================================
         % Row 1: production plot (only for S=5)
         % ==========================================================
@@ -143,7 +149,7 @@ for I = 1:3
             [k_sm_fit, Pk_sm_fit] = smooth_spectra(k(ind_fit), Pk_abs(ind_fit), 200);
 
             fit_CSB = fit_cospectra_CSB2(k_sm_fit, Pk_sm_fit, eps_u, ...
-                fit_Prod.A, fit_Prod.B, fit_Prod.gamma, ka, 100);
+                fit_Prod.A, fit_Prod.B, fit_Prod.gamma, ka, 1);
 
             Ch_CSB(S,I)  = fit_CSB.Ch;
             AuT_CSB(S,I) = fit_CSB.AuT;
@@ -213,7 +219,7 @@ for I = 1:3
     end
 end
 
-exportgraphics(fig, [figures_folder '\Fig_CSB_v2.pdf'], 'ContentType','vector', 'BackgroundColor','none');
+exportgraphics(fig, [figures_folder '/Fig_CSB_v2.pdf'], 'ContentType','vector', 'BackgroundColor','none');
 
 
 %% --- Combined table: m and AuT by height and stability ---

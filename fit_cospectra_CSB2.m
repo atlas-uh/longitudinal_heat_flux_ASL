@@ -1,26 +1,14 @@
+
 function fit = fit_cospectra_CSB2(k, Pk, epsilon, A, B, gamma, ka, AuT0)
-%FIT_COSPECTRA_CSB  Unified co-spectral budget solver for F_{u theta}(k).
+% Unified co-spectral budget solver for F_{u theta}(k)
 %
-% Standard form ODE (derived from paper Eqs. 33-36):
+% Solves the CSB ODE:
+%   dF/d(lnk) + [alpha(k) + CR/AuT] * F = (1-CI)/AuT * tau_d(k) * P(k)
 %
-%   dF/dk + [alpha(k) + CR/AuT] / k * F = (1-CI)/AuT * tau_d * P / k
+% The general solution is F = Ch*Fh + Fp, where:
+%   Fh : homogeneous solution (integrating factor)
+%   Fp : particular solution (variation of parameters, fully numerical)
 %
-% General solution:  F = Ch * Fh + Fp
-%   Fh: homogeneous (integrating factor)
-%   Fp: particular via undetermined coefficients (exact in asymptotic limits)
-%
-%   Fp = (1-CI)/AuT * tau_d * P / [alpha + CR/AuT - beta_eff]
-%
-% where beta_eff = -d[ln(tau_d * P)] / d[ln k], computed analytically:
-%   beta_eff = alpha(k) + 2*gamma*B*k^2/(1+B*k^2)
-%   => denom = CR/AuT - 2*gamma*B*k^2/(1+B*k^2)
-%
-% ISR limit: denom = CR/AuT - 2*gamma = 1 - beta_p + CR/AuT  (Eq. 42)
-% LS  limit: denom = CR/AuT                                    (Eq. 44)
-%
-% When CR/AuT < 2*gamma, the denominator passes through zero at some k,
-% creating a singularity. We handle this by smoothly blending to the
-% dominant-balance denominator (alpha + CR/AuT) near the singularity.
 
 k  = k(:);
 Pk = Pk(:);
@@ -28,22 +16,17 @@ Pk = Pk(:);
 CR = 1.8;
 CI = 3/5;
 
-% ---- Production (Eq. 46) -----------------------------------------------
+% ---- Production model ---------------------------------------------------
 Prod = @(x) A ./ x .* (1 + B .* x.^2).^(-gamma);
 
-% ---- Smooth relaxation time (PAPER CONVENTION: a time) ------------------
-n_blend = 4;
+% ---- Smooth relaxation time ---------------------------------------------
+n_blend    = 4;
 keff       = @(x) (x.^n_blend + ka.^n_blend).^(1/n_blend);
 keff_deriv = @(x) x.^(n_blend-1) .* (x.^n_blend + ka.^n_blend).^(1/n_blend - 1);
 tau_d      = @(x) epsilon.^(-1/3) .* keff(x).^(-2/3);
 
-% ---- alpha(k) = d[ln(k/tau_d)] / d[ln k] -------------------------------
+% ---- alpha(k) = d[ln(k/tau_d)] / d[ln k] --------------------------------
 alpha_fun  = @(x) 1 + (2/3) .* x .* keff_deriv(x) ./ keff(x);
-
-% ---- beta_eff(k) = -d[ln(tau_d * P)] / d[ln k] ANALYTICAL -------------
-% beta_eff = alpha(k) + 2*gamma*B*k^2/(1+B*k^2)
-% denom_exact = alpha + CR/AuT - beta_eff = CR/AuT - 2*gamma*B*k^2/(1+B*k^2)
-beta_corr = @(x) 2.*gamma.*B.*x.^2 ./ (1 + B.*x.^2);
 
 % ---- ODE grid -----------------------------------------------------------
 k_min = min(k(k > 0 & isfinite(k))) * 0.5;
@@ -54,106 +37,73 @@ lnk   = log(k_ode);
 dlnk  = diff(lnk);
 
 % ---- Solve ODE for given AuT -------------------------------------------
-    function [Fh, Fp] = solve_ode(AuT)
-        alph = alpha_fun(k_ode);
-        p_coeff = alph + CR/AuT;
-        
-        % --- Homogeneous solution via integrating factor
-        ln_mu = zeros(N_ode, 1);
-        for i = 2:N_ode
-            ln_mu(i) = ln_mu(i-1) + 0.5*(p_coeff(i-1) + p_coeff(i)) * dlnk(i-1);
-        end
-        mu = exp(ln_mu);
-        Fh = 1 ./ mu;
-        
-        % --- Particular solution with beta_eff correction
-        %
-        % denom_exact = CR/AuT - 2*gamma*B*k^2/(1+B*k^2)
-        % denom_safe  = alpha + CR/AuT   (dominant balance, always positive)
-        %
-        % When denom_exact is well-behaved (positive, not too small),
-        % use it. When it approaches zero or goes negative, blend
-        % smoothly to denom_safe.
-        %
-        % Blending: denom = denom_safe * (1-w) + denom_exact * w
-        % where w -> 1 when denom_exact is healthy
-        %       w -> 0 when denom_exact is near zero or negative
-        
-        bc = beta_corr(k_ode);
-        denom_exact = CR/AuT - bc;
-        denom_safe  = p_coeff;  % alpha + CR/AuT
-        
-        % Smooth blending weight based on denom_exact / denom_safe
-        % ratio -> 1 means exact denom is healthy
-        % ratio -> 0 or negative means exact denom is singular
-        ratio = denom_exact ./ denom_safe;
-        
-        % Sigmoid blend: w = 1 when ratio >> threshold, w = 0 when ratio <= 0
-        % Using a smooth step: w = ratio^2 / (ratio^2 + eta^2) for ratio > 0
-        eta = 0.3;  % transition width
-        w = zeros(size(ratio));
-        pos = ratio > 0;
-        w(pos) = ratio(pos).^2 ./ (ratio(pos).^2 + eta.^2);
-        
-        denom = denom_safe .* (1 - w) + denom_exact .* w;
-        
-        % Source shape
-        S_vals = tau_d(k_ode) .* Prod(k_ode);
-        
-        % Particular solution
-        Fp = (1-CI) ./ AuT .* S_vals ./ denom;
+function [Fh, Fp] = solve_ode(AuT)
+    alph    = alpha_fun(k_ode);
+    p_coeff = alph + CR/AuT;                          % ODE coefficient
+    source  = (1-CI)/AuT .* tau_d(k_ode) .* Prod(k_ode);  % RHS
+
+    % --- Integrating factor (shared by Fh and Fp) ---
+    ln_mu = zeros(N_ode, 1);
+    for i = 2:N_ode
+        ln_mu(i) = ln_mu(i-1) + 0.5*(p_coeff(i-1) + p_coeff(i)) * dlnk(i-1);
     end
+    mu = exp(ln_mu);
+
+     % --- Homogeneous solution: Fh = 1/mu (unit initial condition) ---
+    Fh = 1 ./ mu;
+
+    % --- Particular solution:
+    % Fp(k) = -(1/mu(k)) * integral_{k}^{k_max} mu(s)*source(s) d(lns)
+    integrand = mu .* source;
+    Fp = zeros(N_ode, 1);
+    for i = N_ode-1:-1:1
+        integrand_avg = 0.5*(integrand(i) + integrand(i+1));
+        Fp(i) = (Fp(i+1)*mu(i+1) + integrand_avg*dlnk(i)) / mu(i);
+    end
+
+
+end
 
 % ---- Data cleaning ------------------------------------------------------
 good  = isfinite(k) & isfinite(Pk) & (k > 0) & (abs(Pk) > 0);
 kfit  = k(good);
 Pkfit = Pk(good);
 
-if numel(kfit) < 3
-    fit = struct('Ch',NaN,'AuT',NaN,'k',k,'Phat',NaN(size(k)),...
-                 'Yh',NaN(size(k)),'Yp',NaN(size(k)),...
-                 'A',A,'B',B,'gamma',gamma,'ka',ka);
-    return
-end
-
 log_Pk = log10(abs(Pkfit) + 1e-30);
 
 % ---- For a given AuT, find optimal Ch and return residual ---------------
-    function [resnorm, best_c] = eval_AuT(AuT)
-        [Fh_g, Fp_g] = solve_ode(AuT);
-        
-        Fh_d = interp1(lnk, Fh_g, log(kfit), 'linear', 'extrap');
-        Fp_d = interp1(lnk, Fp_g, log(kfit), 'linear', 'extrap');
-        
-        Ch_try = [logspace(-12, 12, 49), -logspace(-12, 12, 49)];
-        Ch_try = logspace(-12, 12, 49);
-        
-        best_c = 1;
-        best_r = Inf;
-        for ic = 1:numel(Ch_try)
-            F_tot = Ch_try(ic) * Fh_d + Fp_d;
-            rv = sum((log10(abs(F_tot) + 1e-30) - log_Pk).^2);
-            if rv < best_r
-                best_r = rv;
-                best_c = Ch_try(ic);
-            end
+function [resnorm, best_c] = eval_AuT(AuT)
+    [Fh_g, Fp_g] = solve_ode(AuT);
+
+    Fh_d = interp1(lnk, Fh_g, log(kfit), 'linear', 'extrap');
+    Fp_d = interp1(lnk, Fp_g, log(kfit), 'linear', 'extrap');
+
+    % Coarse grid search for Ch
+    Ch_try = logspace(-12, 12, 49);
+    best_c = 1;
+    best_r = Inf;
+    for ic = 1:numel(Ch_try)
+        F_tot = Ch_try(ic) * Fh_d + Fp_d;
+        rv = sum((log10(abs(F_tot) + 1e-30) - log_Pk).^2);
+        if rv < best_r
+            best_r = rv;
+            best_c = Ch_try(ic);
         end
-        
-        if best_c > 0
-            lo = best_c * 1e-3; hi = best_c * 1e3;
-        else
-            lo = best_c * 1e3; hi = best_c * 1e-3;
-        end
-        try
-            ref_obj = @(c) sum((log10(abs(c*Fh_d + Fp_d) + 1e-30) - log_Pk).^2);
-            [best_c, best_r] = fminbnd(ref_obj, lo, hi);
-        catch
-        end
-        
-        resnorm = best_r;
     end
 
-% ---- Multi-start over AuT ----------------------------------------------
+    % Refine Ch with fminbnd
+    lo = best_c * 1e-3;
+    hi = best_c * 1e3;
+    try
+        ref_obj = @(c) sum((log10(abs(c*Fh_d + Fp_d) + 1e-30) - log_Pk).^2);
+            [best_c, best_r] = fminbnd(ref_obj, lo, hi);
+    catch
+    end
+
+    resnorm = best_r;
+end
+
+% ---- Multi-start over AuT -----------------------------------------------
 AuT_seeds = [AuT0, 0.5, 1, 2, 5, 10, 20, 50, 100, 500, 1000, 1e4];
 
 best_rn_global = Inf;
@@ -169,6 +119,7 @@ for j = 1:numel(AuT_seeds)
     end
 end
 
+% Refine AuT continuously
 try
     refine_AuT = @(logA) eval_AuT(exp(logA));
     [logA_opt, rn_opt] = fminbnd(refine_AuT, log(best_AuT*0.1), log(best_AuT*10));

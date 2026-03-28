@@ -1,7 +1,6 @@
 % LONGITUDINAL HEAT FLUX MAIN PROGRAM 
-if ~exist('figures','dir')
-    mkdir('figures');
-end
+
+mkdir('figures');
 
 figures_folder = fullfile(pwd,'figures');
 
