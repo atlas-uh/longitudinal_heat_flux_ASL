@@ -1,14 +1,7 @@
 
 function fit = fit_cospectra_CSB2(k, Pk, epsilon, A, B, gamma, ka, AuT0)
 % Unified co-spectral budget solver for F_{u theta}(k)
-%
-% Solves the CSB ODE:
-%   dF/d(lnk) + [alpha(k) + CR/AuT] * F = (1-CI)/AuT * tau_d(k) * P(k)
-%
-% The general solution is F = Ch*Fh + Fp, where:
-%   Fh : homogeneous solution (integrating factor)
-%   Fp : particular solution (variation of parameters, fully numerical)
-%
+
 
 k  = k(:);
 Pk = Pk(:);
