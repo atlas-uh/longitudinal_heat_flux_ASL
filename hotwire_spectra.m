@@ -21,7 +21,7 @@ blue  = [0.00 0.30 0.55];
 orange = [0.70 0.25 0.05];
 
 %% ================================================================
-%  FIGURE 1: Hot-wire spectra and cospectra (ensemble-averaged)
+%  FIGURE: Hot-wire spectra and cospectra (ensemble-averaged)
 %  ================================================================
 panelLabels = {'(a)','(b)','(c)';'(d)','(e)','(f)';'(g)','(h)','(i)'};
 
@@ -78,7 +78,7 @@ for I = 1:3
     end
     text(0.01,0.99,panelLabels(2,I),'units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize,'HorizontalAlignment','left','VerticalAlignment','top');
     
-    % --- cospectra (ensemble-averaged for plotting)
+    % --- ROW 3: COSPECTRA 
     subplot(3,3,6+I)
     S_plot = find(UTp(I).Pk(1,:,1));
     us_mean = mean(data(I).ustar);

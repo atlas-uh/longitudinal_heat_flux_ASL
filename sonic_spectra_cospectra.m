@@ -1,5 +1,5 @@
 %%
-blue = [0 0.4470 0.7410];       % MATLAB default blue
+blue = [0 0.4470 0.7410];     
 orange = [0.8500 0.3250 0.0980];
 
 fig = figure(6); clf; 
@@ -15,7 +15,7 @@ m_size = 8; % marker size
 nbins = 80;
 k_common = logspace(log10(0.001), log10(100), nbins).';
 
-nan_run_thresh = 1000;   % or whatever value you intended
+nan_run_thresh = 1000;  
 hasLongNaNRun = @(v,thresh) any(diff(find(diff([0; isnan(v); 0]))) >= thresh);
 keepCol_u = ~arrayfun(@(j) hasLongNaNRun(data_sonic_SLTEST.u(:,j), nan_run_thresh), 1:size(data_sonic_SLTEST.u,2));
 keepCol_v = ~arrayfun(@(j) hasLongNaNRun(data_sonic_SLTEST.v(:,j), nan_run_thresh), 1:size(data_sonic_SLTEST.v,2));
@@ -31,8 +31,6 @@ S_idx = keepCol;
 zeta = sonic_SLTEST.zeta(S_idx); 
 
 G_idx = abs(sonic_grass.zeta) < 0.05; % neutral only
-% G_idx (86) = 0; 
-
 ylimm = [10^-5 10^3];
 xlimm = [10^-3 100];
 

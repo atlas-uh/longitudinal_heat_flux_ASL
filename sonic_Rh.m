@@ -20,7 +20,7 @@ alpha = 0.4;
 scatter_size = 20; 
 
 %% (a) Rh vs zeta 
-%nexttile(tl,1)
+
 subplot(3,2,1)
 
 xlimits = [-1 7];
@@ -48,12 +48,8 @@ mask2 = ~(abs(x2) < tol & abs(y2) < tol);
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
-% 
-% scatter(x2, y2, scatter_size, colors2, 'o', 'filled', 'MarkerEdgeColor','none');
-
-
+s1.MarkerFaceAlpha = alpha1;  
+s1.Marker = SLTEST_marker; 
 % --- Grass (orange)
 s2 = scatter(x2(mask2), y2(mask2), scatter_size, 'filled','MarkerFaceColor', orange, 'MarkerEdgeColor', 'none');
 s2.MarkerFaceAlpha = alpha2;
@@ -79,17 +75,14 @@ lgd = legend('SLTEST','Grass Clearing','location','southeast', ...
     'box','on','fontsize',legend_fontsize,'numColumns',2,'interpreter','latex');
 
 % --- inset
-%axes('Position',[.27 .79 .6 .12])
 axes('Position',[.22 .81 .23 .1])
 box on
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;   
+s1.Marker = SLTEST_marker;   
 hold on
-% scatter(x2, y2, scatter_size, colors2, 'o', 'filled', 'MarkerEdgeColor','none');
-
 
 % --- Grass (orange)
 s2 = scatter(x2(mask2), y2(mask2), scatter_size, 'filled','MarkerFaceColor', orange, 'MarkerEdgeColor', 'none');
@@ -101,17 +94,14 @@ xlim([-0.5 0.5]);
 ylim([-1 6])
 xline([0 0],'k-');
 yline([0 0],'k-');
-% yline(-0.5,'k--');
-% yline(-3,'k--')
 box on
-%lgd.Position = [0.48,0.875,0.15,0.05];
 set(gca,'fontsize',gca_fontsize)
 
 
 
 
 %% (b) uT vs wT for near-neutral
-%nexttile(tl,2)
+
 subplot(3,2,2)
 
 % select NN only 
@@ -150,8 +140,8 @@ plot(xfit,-3*(xfit),'--','color','k','linewidth',1);
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;    
+s1.Marker = SLTEST_marker;   
 
 % --- Grass (orange)
 s2 = scatter(x2(mask2), y2(mask2), scatter_size, 'filled','MarkerFaceColor', orange, 'MarkerEdgeColor', 'none');
@@ -178,11 +168,7 @@ set(gca,'FontSize',gca_fontsize);
 
 xlabel('$\overline{ w''\theta_v'' }$','interpreter','latex','FontSize',label_fontsize,'rotation',0);
 ylabel('$\overline{ u''\theta_v'' }$','interpreter','latex','fontsize',label_fontsize);
-% title('$|\zeta|<0.05$','interpreter','latex')
-%text(0.15,-0.4,['$' num2str(p_SLTEST(1),'%.2f') '$'],'interpreter','latex','color',blue,'fontsize',legend_fontsize);
-%text(0.11,-0.5,['$' num2str(Rh_model,'%.2f') '$'],'interpreter','latex','color','k','fontsize',legend_fontsize,'HorizontalAlignment','right');
 text(0.01,0.99,'(b) for $|\zeta|<0.05$','units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize+2,'HorizontalAlignment','left','VerticalAlignment','top');
-%text(0.99,0.99,'$|\zeta|<0.05$ (near-neutral)','units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize+4,'HorizontalAlignment','right','VerticalAlignment','top');
 
 legend(['SLTEST $R_h=' num2str(-p_1(1),'%.2f') '$'],...
        ['Grass $R_h=' num2str(-p_2(1),'%.2f') '$'],...
@@ -209,8 +195,8 @@ plot(xfit,-3*(xfit),'--','color','k','linewidth',1);
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;   
+s1.Marker = SLTEST_marker;  
 hold on;
 
 % --- Grass (orange)
@@ -221,14 +207,12 @@ s2.Marker = grass_marker;
 xlim([-0.02 0.02]);
 ylim([-0.1 0.1])
 yticks([-0.1 0 0.1])
-%xticks([-0.01 0 0.01])
 xline([0 0],'k-');
 yline([0 0],'k-');
 set(gca,'fontsize',gca_fontsize)
 
 
 %% (c) Rh /(u*^2/w*^2)
-%nexttile(tl,3)
 subplot(3,2,3)
 
 xlimits = [-1 7];
@@ -256,8 +240,8 @@ mask2 = ~(abs(x2) < tol & abs(y2) < tol);
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;    
+s1.Marker = SLTEST_marker;    
 hold on;
 
 % --- Grass (orange)
@@ -284,8 +268,8 @@ axes('Position',[.205 .445 .25 .09])
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;    
+s1.Marker = SLTEST_marker;   
 hold on;
 
 % --- Grass (orange)
@@ -304,7 +288,6 @@ yticks([-2  0  2])
 
 
 % plateau 
-
 
 % Pool both datasets (use inset range only)
 x_all = [x1(:); x2(:)];
@@ -350,8 +333,6 @@ yC = [yC1(m1); yC2(m2)];
 yA = yA(~isnan(yA));
 yC = yC(~isnan(yC));
 
-
-% robust spread metrics
 % --- Quartiles
 Q1_A = prctile(yA,25);   Q3_A = prctile(yA,75);
 Q1_C = prctile(yC,25);   Q3_C = prctile(yC,75);
@@ -391,14 +372,12 @@ y2 = real(Rh_grass)';
 mask1 = ~(abs(x1) < tol & abs(y1) < tol);
 mask2 = ~(abs(x2) < tol & abs(y2) < tol);
 
-
-
 % --- plot predicted 
 CI=3/5;
 CR=1.8;
 A=(1-CI)/CR;
 
-zeta=[-100:0.00001:-0.0001];
+zeta=-100:0.00001:-0.0001;
 
 sig_u=2.7*(1-0*3*zeta).^(1/3);
 sig_v=2.4*(1-0*3*zeta).^(1/3);
@@ -426,8 +405,8 @@ box on
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none','HandleVisibility','off');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;   
+s1.Marker = SLTEST_marker;    
 hold on;
 
 % --- Grass (orange)
@@ -441,7 +420,6 @@ loglog(xl,1.2*xl.^(-2/3),'k:','LineWidth',2,'HandleVisibility','off')
 set(gca,'fontsize',gca_fontsize)
 ylabel('$R_h$','interpreter','latex','fontsize',label_fontsize,'rotation',90);
 xlabel('$-\zeta$','interpreter','latex','FontSize',label_fontsize);
-%legend('SLTEST','Grass Clearing','location','southwest')
 text(0.01,0.99,'(d)','units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize+2,'HorizontalAlignment','left','VerticalAlignment','top');
 set(gca, 'XScale', 'log', 'YScale', 'log');
 text(0.06,15,'$-2/3$','interpreter','latex','color','k','fontsize',legend_fontsize);
@@ -451,7 +429,7 @@ ylim(ylimits)
 
 
 %% (e) stable scaling
-%nexttile(tl,5)
+
 subplot(3,2,5.5)
 
 xlimits = [-1 7];
@@ -481,8 +459,8 @@ mask2 = ~(abs(x2) < tol & abs(y2) < tol);
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none','HandleVisibility','off');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;     
+s1.Marker = SLTEST_marker;    
 hold on;
 
 % --- Grass (orange)
@@ -497,9 +475,7 @@ ylim([-0.25 2.4]);
 set(gca,'fontsize',gca_fontsize, 'box','on')
 xlabel('$-\zeta$','interpreter','latex','FontSize',label_fontsize);
 ylabel('$\overline{u''\theta_v''}/\left(U_{DO}\theta_{DO}\right)$','interpreter','latex','Rotation',90,'FontSize',label_fontsize);
-% legend('SLTEST','Grass Clearing','location','southeast','box','on','fontsize',legend_fontsize)
 text(0.01,0.99,'(e)','units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize+2,'HorizontalAlignment','left','VerticalAlignment','top');
-
 
 
 % --- inset 
@@ -508,8 +484,8 @@ axes('Position',[.41 .225 .25 .09])
 
 % --- SLTEST (blue)
 s1 = scatter(x1(mask1), y1(mask1), scatter_size, 'filled', 'MarkerFaceColor', blue, 'MarkerEdgeColor','none','HandleVisibility','off');
-s1.MarkerFaceAlpha = alpha1;     % key line
-s1.Marker = SLTEST_marker;    % circles
+s1.MarkerFaceAlpha = alpha1;   
+s1.Marker = SLTEST_marker;   
 hold on;
 
 % --- Grass (orange)
@@ -527,7 +503,6 @@ yline(-0.5,'k--');
 yline(-3,'k--');
 box on
 set(gca,'fontsize',gca_fontsize)
-
 
 % --- binned medians with IQR error bars on inset
 edges_e = -1:0.02: 0; 

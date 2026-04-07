@@ -4,7 +4,7 @@ CI=3/5;
 CR=1.8;
 A=(1-CI)/CR;
 
-zeta=[-10000:0.001:-0.001];
+zeta=-10000:0.001:-0.001;
 
 sig_u=2.7*(1-0*3*zeta).^(1/3);
 sig_v=2.4*(1-0*3*zeta).^(1/3);
@@ -80,7 +80,5 @@ legend ('$R_h$ DDA','$R_h$ MOST','Location','southwest','interpreter','latex')
 text(0.01,0.98,'(c)','units','normalized','interpreter','latex','color','k','fontsize',14,'HorizontalAlignment','left','VerticalAlignment','top');
 
 ylim([10^-1 3.2])
-%yticks([10^(-1), 10^(0), 3])
-%yticklabels(['10^-1','10^0','3']);
 xlim([10^-3 1000])
 exportgraphics(fig, [figures_folder '\Fig_UT_Scaling.pdf'], 'ContentType', 'vector','BackgroundColor','none');

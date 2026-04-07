@@ -1,0 +1,342 @@
+%% ================================================================
+%  APPENDIX: Hot-wire vs Sonic validation
+%  ================================================================
+
+% --- run-index
+ii_map = {[605 606], [581 582 585 586], [597 598 599]};
+
+S = 5;  % highest hot-wire level (closest to sonic)
+panelLabel = @(k) sprintf('(%c)', char('a' + (k-1)));
+
+L_p = 0.1;  % sonic path length [m]
+
+%% --- Figure S1: spectra and cospectra
+fig_spec = figure(11); clf;
+set(gcf,'units','normalized','OuterPosition',[0,0,0.6,0.75])
+
+row_labels = {'$F_{uu}/\sigma_u^2$', '$F_{\theta\theta}/\sigma_\theta^2$', ...
+              '$|F_{u\theta}/\overline{u''\theta''}|$'};
+
+for I = 1:3
+    ii = ii_map{I};
+    nk = length(ii);
+
+    % --- (row 1) velocity spectra
+    subplot(3,3,I); hold on
+    clear Pknorm_hw
+    for n = 1:nk
+        Pknorm_hw(:,n) = Up(I).Pk(:,S,n) ./ Up(I).var(:,S,n);
+    end
+    k_hw = Up(I).k(:,S,1);
+    loglog(k_hw, mean(Pknorm_hw, 2), ...
+        'color', strat_cols(S,:,I), 'linewidth', 2);
+    k_son = sonic_SLTEST.kx(:,ii);
+    Pk_son = sonic_SLTEST.fuu_kx(:,ii);
+    loglog(mean(k_son,2), mean(Pk_son, 2), 'k-', 'linewidth', 1.5);
+    set(gca, 'fontsize', 14, 'XScale', 'log', 'YScale', 'log')
+    xlim([1e-3 500]); ylim([1e-4 1e2])
+    if I == 1, ylabel(row_labels{1}, 'interpreter', 'latex', 'fontsize', label_fontsize); end
+    title(stability_label{I}, 'fontweight', 'normal', 'fontsize', 16)
+    legend('Hot-wire (1 m)', 'Sonic (2 m)', 'location', 'southwest', 'box', 'off');
+    text(0.02, 0.98, panelLabel(I), 'units', 'normalized', 'fontsize', 14, 'interpreter', 'latex', ...
+        'HorizontalAlignment', 'left', 'VerticalAlignment', 'top')
+    set(gca, 'XTick', [1e-2 1e0 1e2], 'XTickLabel', {'10^{-2}','10^{0}','10^{2}'}, 'YTick', [1e-4 1e-2 1e0 1e2],'box','on')
+
+    xx_ls  = linspace(1e-2, 30, 20);
+    xx_isr = linspace(0.1, 100, 20);
+    loglog(xx_ls,  0.5*xx_ls.^(-1),   'linestyle','-', 'color',[0.7 0.7 0.7],  'linewidth', 1.5, 'HandleVisibility', 'off');
+    loglog(xx_isr, 1*I*xx_isr.^(-5/3), 'linestyle','--', 'color',[0.7 0.7 0.7],'linewidth', 1.5, 'HandleVisibility', 'off');
+    if I == 1
+        text(0.02, 35, '$-1$', 'interpreter', 'latex', 'fontsize', 14)
+        text(0.5, 10, '$-5/3$', 'interpreter', 'latex', 'fontsize', 14)
+    end
+
+    % plot k_x = 1/L_p (path-length)
+    xline(1/L_p, ':', 'color', [0.5 0.5 0.5], 'linewidth', 1.5, 'HandleVisibility', 'off');
+    text(1/L_p * 1.3, 0.7*min(ylim), '$1/L_p$', 'interpreter', 'latex', ...
+            'fontsize', 12, 'color', 'k','HorizontalAlignment','center','VerticalAlignment','top')
+  
+
+    % --- (row 2) temperature spectra
+    subplot(3,3,3+I); hold on
+    clear Pknorm_hw
+    for n = 1:nk
+        Pknorm_hw(:,n) = Tp(I).Pk(:,S,n) ./ Tp(I).var(:,S,n);
+    end
+    k_hw = Tp(I).k(:,S,1);
+    loglog(k_hw, mean(Pknorm_hw, 2), ...
+        'color', strat_cols(S,:,I), 'linewidth', 2);
+    Pk_son = sonic_SLTEST.fTT_kx(:,ii);
+    loglog(mean(k_son,2), mean(Pk_son, 2), 'k-', 'linewidth', 1.5);
+    set(gca, 'fontsize', 14, 'XScale', 'log', 'YScale', 'log')
+    xlim([1e-3 500]); ylim([1e-4 1e2])
+    if I == 1, ylabel(row_labels{2}, 'interpreter', 'latex', 'fontsize', 18); end
+    text(0.02, 0.98, panelLabel(3+I), 'units', 'normalized', 'fontsize', 14, 'interpreter', 'latex', ...
+        'HorizontalAlignment', 'left', 'VerticalAlignment', 'top')
+    set(gca, 'XTick', [1e-2 1e0 1e2], 'XTickLabel', {'10^{-2}','10^{0}','10^{2}'}, 'YTick', [1e-4 1e-2 1e0 1e2],'box','on')
+
+    xx_ls  = linspace(1e-2, 30, 20);
+    xx_isr = linspace(0.1, 100, 20);
+    loglog(xx_ls,  0.5*xx_ls.^(-1),   'linestyle','-', 'color',[0.7 0.7 0.7],  'linewidth', 1.5, 'HandleVisibility', 'off');
+    loglog(xx_isr, 1*I*xx_isr.^(-5/3), 'linestyle','--', 'color',[0.7 0.7 0.7],'linewidth', 1.5, 'HandleVisibility', 'off');
+    if I == 1
+        text(0.025, 34, '$-1$', 'interpreter', 'latex', 'fontsize', 14)
+        text(0.5, 10, '$-5/3$', 'interpreter', 'latex', 'fontsize', 14)
+    end
+
+    xline(1/L_p, ':', 'color', [0.5 0.5 0.5], 'linewidth', 1.5, 'HandleVisibility', 'off');
+    text(1/L_p * 1.3, 0.7*min(ylim), '$1/L_p$', 'interpreter', 'latex', ...
+            'fontsize', 12, 'color', 'k','HorizontalAlignment','center','VerticalAlignment','top')
+  
+    % --- (row 3) uT cospectra
+    subplot(3,3,6+I); hold on
+    clear Pknorm_hw
+    for n = 1:nk
+        Pknorm_hw(:,n) = UTp(I).Pk(:,S,n) ./ UTp(I).CuT(:,S,n);
+    end
+    k_hw = UTp(I).k(:,S,1);
+    loglog(k_hw, mean(abs(Pknorm_hw), 2), ...
+        'color', strat_cols(S,:,I), 'linewidth', 2);
+    Pk_son = sonic_SLTEST.fuT_kx(:,ii);
+    loglog(mean(k_son,2), mean(abs(Pk_son), 2), 'k-', 'linewidth', 1.5);
+    set(gca, 'fontsize', 14, 'XScale', 'log', 'YScale', 'log')
+    xlim([1e-3 500]); ylim([1e-5 1e2])
+    if I == 1, ylabel(row_labels{3}, 'interpreter', 'latex', 'fontsize', 18); end
+    xlabel('$k_x$', 'interpreter', 'latex', 'fontsize', label_fontsize)
+    text(0.02, 0.98, panelLabel(6+I), 'units', 'normalized', 'fontsize', 14, 'interpreter', 'latex', ...
+        'HorizontalAlignment', 'left', 'VerticalAlignment', 'top')
+    set(gca, 'XTick', [1e-2 1e0 1e2], 'XTickLabel', {'10^{-2}','10^{0}','10^{2}'}, 'YTick', [1e-4 1e-2 1e0 1e2],'box','on')
+
+    loglog(xx_ls,  0.5*xx_ls.^(-1),   'linestyle','-', 'color',[0.7 0.7 0.7],  'linewidth', 1.5, 'HandleVisibility', 'off');
+    loglog(xx_isr, 2*I*xx_isr.^(-7/3), 'linestyle','-.', 'color',[0.7 0.7 0.7],'linewidth', 1.5, 'HandleVisibility', 'off');
+    if I == 1
+        text(0.03, 35, '$-1$', 'interpreter', 'latex', 'fontsize', 14)
+        text(0.7, 10, '$-7/3$', 'interpreter', 'latex', 'fontsize', 14)
+    end
+
+    xline(1/L_p, ':', 'color', [0.5 0.5 0.5], 'linewidth', 1.5, 'HandleVisibility', 'off');
+     text(1/L_p * 1.3, 0.7*min(ylim), '$1/L_p$', 'interpreter', 'latex', ...
+            'fontsize', 12, 'color', 'k','HorizontalAlignment','center','VerticalAlignment','top')
+  
+end
+
+exportgraphics(fig_spec, 'Fig_appendix_spectra.pdf', 'ContentType', 'vector', 'BackgroundColor', 'none');
+
+
+
+
+
+
+
+%% --- box plots of sigma_u/u* and sigma_T/T* by height (all stabilities pooled)
+% --- Build matrices for boxplot (run after Figure S2 data collection)
+
+n_z     = numel(z_vec) + 1;          % hot-wire levels + sonic
+x_labels = cell(n_z, 1);
+for j = 1:numel(z_vec)
+    x_labels{j} = sprintf('%.2f', z_vec(j));
+end
+x_labels{end} =  '2.00';
+
+% pad with NaN so all columns are the same length
+max_n = max(arrayfun(@(j) sum(z_idx_all == j), 1:n_z));
+
+sigu_mat = NaN(max_n, n_z);
+sigT_mat = NaN(max_n, n_z);
+
+for j = 1:n_z
+    mask_j  = z_idx_all == j;
+    mask_jT = mask_j & valid;
+
+    vals_u = sigu_us_all(mask_j);
+    vals_T = sigT_Ts_all(mask_jT);
+
+    sigu_mat(1:numel(vals_u), j) = vals_u;
+    sigT_mat(1:numel(vals_T), j) = vals_T;
+end
+fig_box = figure; clf;
+set(gcf, 'units', 'normalized', 'OuterPosition', [0, 0, 0.5, 0.35])  % slightly taller to fit xlabel
+tl = tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+
+% ---- (a) sigma_u / u* ----
+ax1 = nexttile;
+boxplot(sigu_mat, 'Labels', x_labels, 'Colors', cmap(1:n_z,:), ...
+    'Symbol', '.', 'Widths', 0.5)
+set(findobj(ax1, 'Type', 'line'), 'LineWidth', 1.5)
+set(ax1, 'FontSize', 16, 'box', 'on')
+yline(2.5, 'k--', 'LineWidth', 1.5);
+xlabel('$z$ (m)', 'Interpreter', 'latex', 'FontSize', label_fontsize)
+ylabel('$\sigma_u / u_*$', 'Interpreter', 'latex', 'FontSize', label_fontsize)
+text(0.93, 0.93, '(a)', 'Units', 'normalized', 'FontSize', 16, 'Interpreter', 'latex')
+text(0.86,0.05,'(sonic)', 'Units', 'normalized', 'FontSize', 16, 'Interpreter', 'latex');
+% ---- (b) sigma_T / T* ----
+ax2 = nexttile;
+boxplot(sigT_mat, 'Labels', x_labels, 'Colors', cmap(1:n_z,:), ...
+    'Symbol', '.', 'Widths', 0.5)
+set(findobj(ax2, 'Type', 'line'), 'LineWidth', 1.5)
+set(ax2, 'FontSize', 16, 'box', 'on')
+yline(2.0, 'k--', 'LineWidth', 1.5);
+xlabel('$z$ (m)', 'Interpreter', 'latex', 'FontSize', label_fontsize-2)
+ylabel('$\sigma_\theta / T_*$', 'Interpreter', 'latex', 'FontSize', label_fontsize-2)
+text(0.93, 0.93, '(b)', 'Units', 'normalized', 'FontSize', 16, 'Interpreter', 'latex')
+text(0.86,0.05,'(sonic)', 'Units', 'normalized', 'FontSize', 16, 'Interpreter', 'latex');
+
+exportgraphics(fig_box, [figures_folder '/Fig_appendix_boxplots.pdf'], ...
+    'ContentType', 'vector', 'BackgroundColor', 'none');
+
+%% ---  Cumulative spectra (hot-wire vs sonic)
+fig_cum = figure(12); clf;
+set(gcf, 'units', 'normalized', 'OuterPosition', [0, 0, 0.6, 0.5])
+
+row_labels_cum = {'$\int (F_{uu}/\sigma_u^2)\,dk_x$', ...
+                  '$\int (F_{\theta\theta}/\sigma_\theta^2)\,dk_x$'};
+
+for I = 1:3
+    ii = ii_map{I};
+    nk = length(ii);
+
+    % =========================
+    %  (row 1) cumulative velocity spectra
+    % ==========================
+    subplot(2, 3, I); hold on
+
+    % ----- HOT-WIRE -----
+    % Build common k-grid from overlap across runs
+    kmin_hw = -inf;
+    kmax_hw = inf;
+    for n = 1:nk
+        k_tmp = Up(I).k(2:end, S, n);
+        kmin_hw = max(kmin_hw, min(k_tmp));
+        kmax_hw = min(kmax_hw, max(k_tmp));
+    end
+    k_common_hw = logspace(log10(kmin_hw), log10(kmax_hw), 300)';
+
+    Pk_hw_interp = nan(length(k_common_hw), nk);
+    for n = 1:nk % for each run
+        k_hw_n  = Up(I).k(:, S, n);
+        Pk_hw_n = Up(I).Pk(:, S, n) ./ Up(I).var(1,S,n);   % normalized by variance
+        Pk_hw_interp(:, n) = interp1(k_hw_n, Pk_hw_n, k_common_hw, 'linear', NaN);
+    end
+
+    Pk_hw_mean  = mean(Pk_hw_interp, 2, 'omitnan');
+    cumPk_hw_mean = cumtrapz(k_common_hw, Pk_hw_mean);
+
+    plot(k_common_hw, cumPk_hw_mean, ...
+        'color', strat_cols(S,:,I), 'linewidth', 2, 'DisplayName', 'Hot-wire (1 m)');
+
+    % ----- SONIC -----
+    kmin_son = -inf;
+    kmax_son = inf;
+    for n = 1:nk
+        jj = ii(n);
+        k_tmp = sonic_SLTEST.kx(2:end, jj);
+        kmin_son = max(kmin_son, min(k_tmp));
+        kmax_son = min(kmax_son, max(k_tmp));
+    end
+    k_common_son = logspace(log10(kmin_son), log10(kmax_son), 300)';
+    Pk_son_interp = nan(length(k_common_son), nk);
+    for n = 1:nk
+        jj = ii(n);
+        k_son_n  = sonic_SLTEST.kx(:, jj);
+        Pk_son_n = sonic_SLTEST.fuu_kx(:, jj);   % already normalized
+        Pk_son_interp(:, n) = interp1(k_son_n, Pk_son_n, k_common_son, 'linear', NaN);
+    end
+
+    Pk_son_mean   = mean(Pk_son_interp, 2, 'omitnan');
+    cumPk_son_mean = cumtrapz(k_common_son, Pk_son_mean);
+
+    plot(k_common_son, cumPk_son_mean, ...
+        'k-', 'linewidth', 1.5, 'DisplayName', 'Sonic (2 m)');
+
+    set(gca, 'XScale', 'log', 'fontsize', 14, 'box', 'on')
+    xlim([1e-3 500])
+    ylim([0 1.02])
+    xline(1/L_p, ':', 'color', [0.5 0.5 0.5], 'linewidth', 1.5, ...
+        'HandleVisibility', 'off');
+
+    if I == 1
+        ylabel(row_labels_cum{1}, 'interpreter', 'latex', 'fontsize', label_fontsize)
+    end
+    title(stability_label{I}, 'fontweight', 'normal', 'fontsize', 16)
+    legend('location', 'northwest', 'box', 'off', 'fontsize', label_fontsize-6)
+    text(0.9, 0.98, panelLabel(I), 'units', 'normalized', 'fontsize', 16, ...
+        'interpreter', 'latex', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top')
+
+    % =========================
+    %  (row 2) cumulative temperature spectra
+    % ==========================
+    subplot(2, 3, 3+I); hold on
+
+    % ----- HOT-WIRE -----
+    kmin_hw = -inf;
+    kmax_hw = inf;
+    for n = 1:nk
+        k_tmp = Tp(I).k(2:end, S, n);
+        kmin_hw = max(kmin_hw, min(k_tmp));
+        kmax_hw = min(kmax_hw, max(k_tmp));
+    end
+    k_common_hw = logspace(log10(kmin_hw), log10(kmax_hw), 300)';
+
+    Pk_hw_interp = nan(length(k_common_hw), nk);
+    for n = 1:nk
+        k_T_n  = Tp(I).k(:, S, n);
+        Pk_T_n = Tp(I).Pk(:, S, n) ./ Tp(I).var(1,S,n);   % normalized by variance
+        Pk_hw_interp(:, n) = interp1(k_T_n, Pk_T_n, k_common_hw, 'linear', NaN);
+    end
+
+    Pk_hw_mean   = mean(Pk_hw_interp, 2, 'omitnan');
+    cumPk_hw_mean = cumtrapz(k_common_hw, Pk_hw_mean);
+
+    plot(k_common_hw, cumPk_hw_mean, ...
+        'color', strat_cols(S,:,I), 'linewidth', 2, 'DisplayName', 'Hot-wire (1 m)');
+
+    % ----- SONIC -----
+    kmin_son = -inf;
+    kmax_son = inf;
+    for n = 1:nk
+        jj = ii(n);
+        k_tmp = sonic_SLTEST.kx(2:end, jj);
+        kmin_son = max(kmin_son, min(k_tmp));
+        kmax_son = min(kmax_son, max(k_tmp));
+    end
+    k_common_son = logspace(log10(kmin_son), log10(kmax_son), 300)';
+
+    Pk_son_interp = nan(length(k_common_son), nk);
+    for n = 1:nk
+        jj = ii(n);
+
+        k_son_n  = sonic_SLTEST.kx(:, jj);
+        Pk_son_n = sonic_SLTEST.fTT_kx(:, jj);   %  already normalized 
+        Pk_son_interp(:, n) = interp1(k_son_n, Pk_son_n, k_common_son, 'linear', NaN);
+    end
+
+    Pk_son_mean   = mean(Pk_son_interp, 2, 'omitnan');
+    cumPk_son_mean = cumtrapz(k_common_son, Pk_son_mean);
+
+    plot(k_common_son, cumPk_son_mean, ...
+        'k-', 'linewidth', 1.5, 'DisplayName', 'Sonic (2 m)');
+
+    set(gca, 'XScale', 'log', 'fontsize', 14, 'box', 'on')
+    xlim([1e-3 500])
+    ylim([0 1.02])
+    xline(1/L_p, ':', 'color', [0.5 0.5 0.5], 'linewidth', 1.2, ...
+        'HandleVisibility', 'off');
+    text(1/L_p * 1.3, 0.7*min(ylim), '$1/L_p$', 'interpreter', 'latex', ...
+            'fontsize', 12, 'color', 'k','HorizontalAlignment','center','VerticalAlignment','top')
+ 
+    xlabel('$k_x$ (m$^{-1}$)', 'interpreter', 'latex', 'fontsize', label_fontsize)
+
+    if I == 1
+        ylabel(row_labels_cum{2}, 'interpreter', 'latex', 'fontsize', label_fontsize)
+    end
+    legend('location', 'northwest', 'box', 'off', 'fontsize', label_fontsize-6)
+    text(0.9, 0.98, panelLabel(3+I), 'units', 'normalized', 'fontsize', 16, ...
+        'interpreter', 'latex', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top')
+end
+
+
+
+exportgraphics(fig_cum, [figures_folder '/Fig_appendix_cumulative_spectra.pdf'], ...
+    'ContentType', 'vector', 'BackgroundColor', 'none');
+
+

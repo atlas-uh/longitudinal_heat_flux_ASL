@@ -23,7 +23,7 @@ for E = 1: length(sonic_struc.us)
     k_raw  = sonic_struc.f * c;
     Pk_raw = abs(sonic_struc.fuT(:,E) ./ c);
 
-    % Remove bad points
+    
     good = isfinite(k_raw) & isfinite(Pk_raw) & k_raw > 0 & Pk_raw > 0;
     if sum(good) < 20, continue; end
     k_e  = k_raw(good);

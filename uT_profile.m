@@ -60,8 +60,7 @@ for I = 1:3
     x = median(uT_norm,2);
     y = mean(z,2);
     semilogy(x,y,mstyle(I,:),'color',strat_cols(4,:,I),'markerfacecolor',strat_cols(4,:,I),'markersize',8,'HandleVisibility','on','linewidth',1.5); hold on
-    % calculate p value (if >0.05, then slope is not statistically
-    % significantly different than 0) 
+    % calculate p value (if >0.05, then slope is not statistically significantly different than 0) 
     mdl = fitlm(y, x);
     pVals_norm(I) = mdl.Coefficients.pValue(2); 
 
@@ -115,9 +114,6 @@ set(gca,'fontsize',gca_fontsize);
 xlabel('$\overline{ u''\theta_v'' }$','interpreter','latex','fontsize',label_fontsize);
 xline([0 0],'k-','handlevisibility','off'); hold on;
 leg_cell = [];
-%leg_cell{1} = fit_string_US;
-%leg_cell{2} = fit_string_NN;
-%legend(leg_cell, 'interpreter','latex','fontsize',legend_fontsize+2,'numcolumns',1,'orientation','horizontal','location','northeast','box','on')
 text(0.01,0.99,'(b)','units','normalized','interpreter','latex','color','k','fontsize',legend_fontsize+4,'HorizontalAlignment','left','VerticalAlignment','top');
 
 

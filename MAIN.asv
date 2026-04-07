@@ -5,8 +5,7 @@ figures_folder = fullfile(pwd,'figures');
 %% --- uT scaling from MOST and DDA 
 UT_Scaling; 
 
-%% --- load and analyze sonic data
-% --- grass site
+%% --- load and analyze grass site sonic data
 load('data_sonic_grass_site.mat');
 temp.U = data_sonic_grass_site.u;            
 temp.V = data_sonic_grass_site.v;
@@ -18,7 +17,7 @@ data_sonic_grass_site.w = temp.W;
 clear temp
 [sonic_grass] = calculate_sonic_stats(data_sonic_grass_site);
 
-% --- SLTEST site 
+%% --- load and analyze SLTEST site sonic data
 load('data_sonic_SLTEST.mat');
 clear temp
 % fill NaNs 
@@ -73,7 +72,7 @@ stability_label{3} = 'stable';
 % calculate spectra and structure functions
 clear Up Tp
 nmin = 10;
-pow = 14; 
+pow = 15; % was 13 I think 
 for  I = 1:3
     disp(['--- ' stability_label{I} ' ---'])
     [Up(I),Tp(I)] = process_data_2(data(I).U,data(I).T,pow,fs,data(I).ustar,z_vec,nmin);  
@@ -98,8 +97,8 @@ for I = 1:3 % steps through each stability
         z = z_vec;
         p = polyfit(log(z),U,1);
         a = p(1);
-        dUdz(:,k) = a./z_vec;   
-        dUdz_2m(k) = a./2; % sonic height
+        dUdz(:,k) = a./z_vec;   % shear at each height 
+        dUdz_2m(k) = a./2;
         plot(U,z,'ko'); hold on
         zk = linspace(z_vec(1),z_vec(end),20); 
         Uk = polyval(p,log(zk)); 
@@ -117,7 +116,7 @@ for I = 1:3 % steps through each stability
         T = T(T>0);
         p = polyfit(log(z),T,1);
         a = p(1);
-        dTdz(:,k) = a./z_vec;  
+        dTdz(:,k) = a./z_vec;   % shear at each height  
         dTdz_2m(k) = a./2;
         plot(T,z,'ko'); hold on
         zk = linspace(z_vec(1),z_vec(end),20); 

@@ -31,7 +31,7 @@ for I = 1:3
    end
     xline(1,'-','color',[0.7 0.7 0.7],'HandleVisibility','off','linewidth',2);
     zL = z_vec./mean(data(I).L);
-     %xlim([10^-4 200])
+ 
     
    if I == 2 
         set(gca,'fontsize',gca_fontsize,'XScale', 'log', 'XTick', logspace(-4, 2, 4)); 
@@ -39,9 +39,7 @@ for I = 1:3
            set(gca,'fontsize',gca_fontsize,'XScale', 'log', 'XTick', logspace(-4, 2, 7)); 
 
    end
-   %     leg = legend(num2str(zL(1),'%.3f'),num2str(zL(2),'%.3f'),num2str(zL(3),'%.3f'),num2str(zL(4),'%.3f'),num2str(zL(5),'%.3f'),'location','southwest','fontsize',12);
-   %     title(leg,'z/L')
-
+  
 
     leg = legend(num2str(z_vec(S_plot)','%.3f'),'location','southwest','fontsize',12);
     title(leg,'$z$ (m)','interpreter','latex');

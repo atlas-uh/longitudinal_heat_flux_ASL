@@ -1,9 +1,10 @@
-function [Up,Tp] = process_data_2(Uall,Tall,pow,fs,utaus,z_vec,nmin)
+function [Up,Tp] = process_data_2(Uall,Tall,pow,fs,utaus,z_vec)
 
 alpha = 2.1e-5; % thermal diffusivity of air m^2/s
 nu = 1.5e-5; 
 Up.fluc = []; Up.var = []; Up.mean = []; Up.D2 = []; Up.D3 = []; Up.r = [];
 Tp.fluc = []; Tp.var = []; Tp.mean = [];
+
 for B = 1:size(Uall,3)
     disp(['ens#' num2str(B) '/' num2str(size(Uall,3))]);
     U_event = Uall(:,:,B);
@@ -29,7 +30,6 @@ for B = 1:size(Uall,3)
     % --- spectra
     for S = S_process_U
         [Up.Pf(:,S,B),Up.f(:,S,B)]=pwelch(Up.fluc(:,S,B),hamming(2^pow),0,[],fs,'onesided','psd'); 
-       
         Up.Pk(:,S,B) = Up.Pf(:,S,B)./(2*pi).*mean(Up.mean(:,S,B));
         Up.k(:,S,B) = (2*pi)./(Up.mean(:,S,B)).*Up.f(:,S,B);
 
@@ -98,8 +98,6 @@ for B = 1:size(Uall,3)
     % --- spectra
     for S = S_process_T
         [Tp.Pf(:,S,B),Tp.f(:,S,B)]=pwelch(Tp.fluc(:,S,B),hamming(2^pow),0,[],fs,'onesided','psd'); 
-        
-
         Tp.Pk(:,S,B) = Tp.Pf(:,S,B)./(2*pi).*mean(Up.mean(:,S,B));
         Tp.k(:,S,B) = (2*pi)./mean(Up.mean(:,S,B)).*Tp.f(:,S,B);
 

@@ -15,7 +15,7 @@ function [output] = calculate_sonic_stats(sonic_struct)
             continue
         end
 
-        % ----- Apply a 5-min cutoff
+        % ----- Apply a 5-min detrending
         tcut = 5;
 
         [u_de,~] = detrendHutchins(u, fs, tcut);
@@ -142,60 +142,3 @@ function [M2, M3] = structureFunctions23(u_all, i)
     u_m3 = (u_m2) .* u_m;
     M3 = mean(mean(u_m3));
 end
-
-%{
-
-GRASS.spec_cospec = grass_spec_cospec ;
-allF_GRASS = allF; 
-GRASS.allF = allF_GRASS;
-
-GRASS.Ubar = Ubar;
-GRASS.Cuu = Cuu;
-GRASS.Cvv = Cvv;
-GRASS.Cww = Cww;
-GRASS.CTT = CTT;
-GRASS.Cuv = Cuv;
-GRASS.Cuw = Cuw;
-GRASS.CwT = CwT;
-GRASS.CuT = CuT;
-GRASS.fuu = fuu; 
-GRASS.fww = fww; 
-GRASS.fTT = fTT; 
-GRASS.fuw = fuw; 
-GRASS.fwT = fwT; 
-GRASS.fuT = fuT; 
-GRASS.CuT_REA = CuT_REA; 
-GRASS.CuT_REA_G = CuT_REA_G;
-GRASS.CuT_CEM = CuT_CEM; 
-GRASS.beta_u = beta_u;
-GRASS.CwT_REA = CwT_REA;
-GRASS.CwT_REA_G = CwT_REA_G;
-GRASS.CwT_CEM = CwT_CEM;
-GRASS.beta_w = beta_w; 
-GRASS.us = us; 
-GRASS.Ts = Ts;
-GRASS.beta = beta; 
-GRASS.ws = ws; 
-GRASS.L = L; 
-GRASS.stab = stab; 
-GRASS.M11_u = M11_u;
-GRASS.M31_u = M31_u;
-GRASS.M40_u = M40_u;
-GRASS.M11_w = M11_w;
-GRASS.M31_w = M31_w;
-GRASS.M40_w = M40_w;
-GRASS.eps_son = eps_son; 
-GRASS.Tbar = Tbar; 
-save('GRASS.mat','GRASS');
-
-
- 
-%% 
-% y = deltaT; 
-% x = Tp3./CTT; 
-% figure; 
-% plot(x,y,'o')
-% 
-
-$
-%}
