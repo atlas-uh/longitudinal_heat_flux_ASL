@@ -135,21 +135,6 @@ exportgraphics(fig_box, [figures_folder '/Fig_appendix_boxplots.pdf'], ...
 
 
 
-%% calculate spectra and structure functions
-clear Up Tp
-nmin = 10;
-pow = 13; 
-for  I = 1:3
-    disp(['--- ' stability_label{I} ' ---'])
-    [Up(I),Tp(I)] = process_data_2(data(I).U,data(I).T,pow,fs,data(I).ustar,z_vec,nmin);  
-end
-
-% calculate cospectra
-clear UTp 
-for I = 1:3
-     [UTp(I)] = process_cospectra(Up(I),Tp(I),pow,fs); 
-end
-
 %% --- Figure: spectra and cospectra
 fig_spec = figure(11); clf;
 set(gcf,'units','normalized','OuterPosition',[0,0,0.6,0.75])
