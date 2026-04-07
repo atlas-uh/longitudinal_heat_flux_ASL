@@ -73,7 +73,7 @@ stability_label{3} = 'stable';
 % calculate spectra and structure functions
 clear Up Tp
 nmin = 10;
-pow = 14; 
+pow = 13; 
 for  I = 1:3
     disp(['--- ' stability_label{I} ' ---'])
     [Up(I),Tp(I)] = process_data_2(data(I).U,data(I).T,pow,fs,data(I).ustar,z_vec,nmin);  

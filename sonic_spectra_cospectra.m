@@ -230,7 +230,7 @@ text(0.18,80,'$-7/3$','fontsize',16,'interpreter','latex')
 yticks([1e-4 1e-2 1 1e2])
 yticklabels({'10^{-4}','10^{-2}','10^{0}','10^{2}'})
 
- exportgraphics(fig, [figures_folder 'Fig_spectra_cospectra.pdf'], 'ContentType', 'vector','BackgroundColor','none');
+ exportgraphics(fig, [figures_folder '\Fig_spectra_cospectra.pdf'], 'ContentType', 'vector','BackgroundColor','none');
 
 
 
